@@ -1,11 +1,10 @@
 package com.example.deneme.di
 
 import android.content.Context
-import com.example.deneme.data.dao.BookDao
-import com.example.deneme.data.dao.ReadingGoalDao
+import androidx.room.Room
 import com.example.deneme.data.database.BookDatabase
-import com.example.deneme.data.repository.BookRepository
-import com.example.deneme.data.repository.ReadingGoalRepository
+import com.example.deneme.data.database.BookDao
+import com.example.deneme.data.database.ReadingGoalDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,31 +18,23 @@ object DatabaseModule {
     
     @Provides
     @Singleton
-    fun provideBookDatabase(@ApplicationContext context: Context): BookDatabase {
-        return BookDatabase.getDatabase(context)
+    fun provideDatabase(@ApplicationContext context: Context): BookDatabase {
+        return Room.databaseBuilder(
+            context,
+            BookDatabase::class.java,
+            BookDatabase.DATABASE_NAME
+        )
+        .fallbackToDestructiveMigration() // Veritabanı sürüm değişikliklerinde verileri sıfırlar
+        .build()
     }
-    
+
     @Provides
-    @Singleton
     fun provideBookDao(database: BookDatabase): BookDao {
         return database.bookDao()
     }
-    
+
     @Provides
-    @Singleton
     fun provideReadingGoalDao(database: BookDatabase): ReadingGoalDao {
         return database.readingGoalDao()
     }
-    
-    @Provides
-    @Singleton
-    fun provideBookRepository(bookDao: BookDao): BookRepository {
-        return BookRepository(bookDao)
-    }
-    
-    @Provides
-    @Singleton
-    fun provideReadingGoalRepository(readingGoalDao: ReadingGoalDao): ReadingGoalRepository {
-        return ReadingGoalRepository(readingGoalDao)
-    }
-} 
+}

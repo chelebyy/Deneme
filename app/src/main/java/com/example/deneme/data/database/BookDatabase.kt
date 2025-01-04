@@ -1,55 +1,69 @@
 package com.example.deneme.data.database
 
-import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.deneme.data.dao.BookDao
-import com.example.deneme.data.dao.ReadingGoalDao
-import com.example.deneme.data.model.Book
-import com.example.deneme.data.model.ReadingGoal
+import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
-val MIGRATION_3_4 = object : Migration(3, 4) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("""
-            CREATE TABLE IF NOT EXISTS reading_goals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                year INTEGER NOT NULL,
-                month INTEGER,
-                targetBooks INTEGER NOT NULL,
-                targetPages INTEGER
-            )
-        """)
-    }
+@Entity(tableName = "books")
+data class BookEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val title: String,
+    val author: String,
+    val pageCount: Int,
+    val status: String,
+    val category: String,
+    val currentPage: Int = 0,
+    val startDate: Long? = null,
+    val finishDate: Long? = null
+)
+
+@Entity(tableName = "reading_goals")
+data class ReadingGoalEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val targetBooks: Int,
+    val completedBooks: Int = 0
+)
+
+@Dao
+interface BookDao {
+    @Query("SELECT * FROM books")
+    fun getAllBooks(): Flow<List<BookEntity>>
+    
+    @Query("SELECT * FROM books WHERE title LIKE '%' || :query || '%' OR author LIKE '%' || :query || '%'")
+    fun searchBooks(query: String): Flow<List<BookEntity>>
+    
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBook(book: BookEntity)
+    
+    @Update
+    suspend fun updateBook(book: BookEntity)
+    
+    @Delete
+    suspend fun deleteBook(book: BookEntity)
 }
 
-@Database(
-    entities = [Book::class, ReadingGoal::class],
-    version = 4,
-    exportSchema = false
-)
+@Dao
+interface ReadingGoalDao {
+    @Query("SELECT * FROM reading_goals")
+    fun getAllGoals(): Flow<List<ReadingGoalEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGoal(goal: ReadingGoalEntity)
+
+    @Update
+    suspend fun updateGoal(goal: ReadingGoalEntity)
+
+    @Delete
+    suspend fun deleteGoal(goal: ReadingGoalEntity)
+}
+
+@Database(entities = [BookEntity::class, ReadingGoalEntity::class], version = 1, exportSchema = false)
 abstract class BookDatabase : RoomDatabase() {
     abstract fun bookDao(): BookDao
     abstract fun readingGoalDao(): ReadingGoalDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: BookDatabase? = null
-
-        fun getDatabase(context: Context): BookDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    BookDatabase::class.java,
-                    "book_database"
-                )
-                .addMigrations(MIGRATION_3_4)
-                .build()
-                INSTANCE = instance
-                instance
-            }
-        }
+        const val DATABASE_NAME = "book_database"
     }
-} 
+}

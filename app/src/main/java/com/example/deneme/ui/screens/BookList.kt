@@ -4,126 +4,110 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.deneme.R
 import com.example.deneme.data.model.Book
-import com.example.deneme.data.model.ReadingStatus
+import com.example.deneme.ui.viewmodel.BookViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookList(
-    books: List<Book>,
-    onBookClick: (Book) -> Unit,
-    onBookStatusChange: (Book, ReadingStatus) -> Unit,
-    onBookDelete: (Book) -> Unit
+    viewModel: BookViewModel,
+    onAddBookClick: () -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        items(books) { book ->
-            BookCard(
-                book = book,
-                onClick = { onBookClick(book) },
-                onStatusChange = { status -> onBookStatusChange(book, status) },
-                onDelete = { onBookDelete(book) }
+    var showSearchBar by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    val books by viewModel.books.collectAsState()
+
+    Column {
+        TopAppBar(
+            title = { Text("Kitaplarım") },
+            actions = {
+                IconButton(onClick = { showSearchBar = !showSearchBar }) {
+                    Icon(Icons.Default.Search, contentDescription = "Ara")
+                }
+                IconButton(onClick = onAddBookClick) {
+                    Icon(Icons.Default.Add, contentDescription = "Kitap Ekle")
+                }
+            }
+        )
+
+        if (showSearchBar) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { query ->
+                    searchQuery = query
+                    viewModel.searchBooks(query)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                placeholder = { Text("Kitap veya yazar ara...") },
+                singleLine = true
             )
-            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(books) { book ->
+                BookItem(
+                    book = book,
+                    onEditClick = { /* TODO: Edit book */ },
+                    onDeleteClick = { viewModel.deleteBook(book) }
+                )
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookCard(
+fun BookItem(
     book: Book,
-    onClick: () -> Unit,
-    onStatusChange: (ReadingStatus) -> Unit,
-    onDelete: () -> Unit
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = book.title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete book")
-                }
-            }
-            
+            Text(
+                text = book.title,
+                style = MaterialTheme.typography.titleMedium
+            )
             Text(
                 text = book.author,
                 style = MaterialTheme.typography.bodyMedium
             )
+            Text(
+                text = "${book.pageCount} sayfa",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                text = "Durum: ${book.status}",
+                style = MaterialTheme.typography.bodySmall
+            )
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(
-                    text = "${book.pageCount} pages",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                
-                Row {
-                    IconButton(
-                        onClick = { onStatusChange(ReadingStatus.TO_READ) }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_book),
-                            contentDescription = "To Read",
-                            tint = if (book.status == ReadingStatus.TO_READ) 
-                                MaterialTheme.colorScheme.primary 
-                            else 
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { onStatusChange(ReadingStatus.READING) }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_bookmark),
-                            contentDescription = "Reading",
-                            tint = if (book.status == ReadingStatus.READING) 
-                                MaterialTheme.colorScheme.primary 
-                            else 
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { onStatusChange(ReadingStatus.READ) }
-                    ) {
-                        Icon(Icons.Default.Done, 
-                            contentDescription = "Read",
-                            tint = if (book.status == ReadingStatus.READ) 
-                                MaterialTheme.colorScheme.primary 
-                            else 
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
+                TextButton(onClick = onEditClick) {
+                    Text("Düzenle")
+                }
+                TextButton(onClick = onDeleteClick) {
+                    Text("Sil")
                 }
             }
         }

@@ -1,15 +1,16 @@
 package com.example.deneme.data.api
 
 import com.example.deneme.data.model.Book
+import com.example.deneme.data.model.ReadingStatus
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface GoogleBooksService {
-    @GET("books/v1/volumes")
+    @GET("volumes")
     suspend fun searchBooks(
-        @Query("q") query: String,
-        @Query("maxResults") maxResults: Int = 10
-    ): GoogleBooksResponse
+        @Query("q") query: String
+    ): Response<GoogleBooksResponse>
 }
 
 data class GoogleBooksResponse(
@@ -18,18 +19,21 @@ data class GoogleBooksResponse(
 
 data class VolumeInfo(
     val volumeInfo: BookInfo
-)
-
-data class BookInfo(
-    val title: String = "",
-    val authors: List<String>? = null,
-    val pageCount: Int = 0
 ) {
     fun toBook(): Book {
         return Book(
-            title = title,
-            author = authors?.firstOrNull() ?: "",
-            pageCount = pageCount
+            title = volumeInfo.title ?: "",
+            author = volumeInfo.authors?.firstOrNull() ?: "Bilinmeyen Yazar",
+            pageCount = volumeInfo.pageCount ?: 0,
+            status = ReadingStatus.TO_READ,
+            category = volumeInfo.categories?.firstOrNull() ?: "Genel"
         )
     }
-} 
+}
+
+data class BookInfo(
+    val title: String? = null,
+    val authors: List<String>? = null,
+    val pageCount: Int? = null,
+    val categories: List<String>? = null
+)

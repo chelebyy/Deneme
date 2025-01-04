@@ -1,16 +1,15 @@
 package com.example.deneme.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import com.example.deneme.ui.components.ReadingStatusDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,115 +22,92 @@ fun EditBookDialog(
     var author by remember { mutableStateOf(book.author) }
     var pageCount by remember { mutableStateOf(book.pageCount.toString()) }
     var status by remember { mutableStateOf(book.status) }
-    var notes by remember { mutableStateOf(book.notes ?: "") }
-
+    var category by remember { mutableStateOf(book.category) }
+    var currentPage by remember { mutableStateOf(book.currentPage.toString()) }
+    
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        title = { Text("Kitabı Düzenle") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                }
-                Text("Edit Book")
-                IconButton(onClick = {
-                    if (title.isNotEmpty() && author.isNotEmpty()) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Kitap Adı") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = author,
+                    onValueChange = { author = it },
+                    label = { Text("Yazar") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = pageCount,
+                    onValueChange = { pageCount = it },
+                    label = { Text("Sayfa Sayısı") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = category,
+                    onValueChange = { category = it },
+                    label = { Text("Kategori") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = currentPage,
+                    onValueChange = { currentPage = it },
+                    label = { Text("Mevcut Sayfa") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                ReadingStatusDropdown(
+                    currentStatus = status,
+                    onStatusSelected = { status = it }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (title.isNotBlank() && author.isNotBlank() && pageCount.isNotBlank()) {
                         onBookUpdated(
                             book.copy(
                                 title = title,
                                 author = author,
                                 pageCount = pageCount.toIntOrNull() ?: 0,
                                 status = status,
-                                notes = notes.ifEmpty { null }
+                                category = category,
+                                currentPage = currentPage.toIntOrNull() ?: 0
                             )
                         )
+                        onDismiss()
                     }
-                }) {
-                    Icon(Icons.Outlined.Done, contentDescription = "Save")
                 }
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Book Title") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                
-                OutlinedTextField(
-                    value = author,
-                    onValueChange = { author = it },
-                    label = { Text("Author") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                
-                OutlinedTextField(
-                    value = pageCount,
-                    onValueChange = { pageCount = it },
-                    label = { Text("Page Count") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = { Text("Notes") },
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 5
-                )
-
-                val items = listOf("To Read", "Reading", "Read")
-                val selectedIndex = when(status) {
-                    ReadingStatus.TO_READ -> 0
-                    ReadingStatus.READING -> 1
-                    ReadingStatus.READ -> 2
-                }
-
-                NavigationBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 8.dp),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 0.dp
-                ) {
-                    items.forEachIndexed { index, title ->
-                        NavigationBarItem(
-                            selected = selectedIndex == index,
-                            onClick = {
-                                status = when(index) {
-                                    0 -> ReadingStatus.TO_READ
-                                    1 -> ReadingStatus.READING
-                                    else -> ReadingStatus.READ
-                                }
-                            },
-                            icon = { },
-                            label = { 
-                                Text(
-                                    text = title,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                ) 
-                            }
-                        )
-                    }
-                }
+                Text("Kaydet")
             }
         },
-        confirmButton = { },
-        dismissButton = { }
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal")
+            }
+        }
     )
 }
