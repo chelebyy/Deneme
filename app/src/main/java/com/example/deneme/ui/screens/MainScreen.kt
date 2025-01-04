@@ -11,16 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,6 +20,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import com.example.deneme.R
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.ui.viewmodel.BookViewModel
@@ -68,10 +61,16 @@ fun MainScreen(
                 title = { Text("My Library") },
                 actions = {
                     IconButton(onClick = { showStatsDialog = true }) {
-                        Icon(Icons.Filled.Assessment, contentDescription = "Statistics")
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_chart),
+                            contentDescription = "Statistics"
+                        )
                     }
                     IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.Filled.Sort, contentDescription = "Sort")
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_sort),
+                            contentDescription = "Sort"
+                        )
                     }
                     DropdownMenu(
                         expanded = showSortMenu,
@@ -83,7 +82,12 @@ fun MainScreen(
                                 currentSortOrder = SortOrder.TITLE_ASC
                                 showSortMenu = false
                             },
-                            leadingIcon = { Icon(Icons.Filled.ArrowUpward, contentDescription = null) }
+                            leadingIcon = { 
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_sort),
+                                    contentDescription = null
+                                )
+                            }
                         )
                         DropdownMenuItem(
                             text = { Text("Title (Z-A)") },
@@ -91,7 +95,12 @@ fun MainScreen(
                                 currentSortOrder = SortOrder.TITLE_DESC
                                 showSortMenu = false
                             },
-                            leadingIcon = { Icon(Icons.Filled.ArrowDownward, contentDescription = null) }
+                            leadingIcon = { 
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_sort),
+                                    contentDescription = null
+                                )
+                            }
                         )
                         DropdownMenuItem(
                             text = { Text("Pages (Low to High)") },
@@ -99,7 +108,12 @@ fun MainScreen(
                                 currentSortOrder = SortOrder.PAGES_ASC
                                 showSortMenu = false
                             },
-                            leadingIcon = { Icon(Icons.Filled.ArrowUpward, contentDescription = null) }
+                            leadingIcon = { 
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_sort),
+                                    contentDescription = null
+                                )
+                            }
                         )
                         DropdownMenuItem(
                             text = { Text("Pages (High to Low)") },
@@ -107,7 +121,12 @@ fun MainScreen(
                                 currentSortOrder = SortOrder.PAGES_DESC
                                 showSortMenu = false
                             },
-                            leadingIcon = { Icon(Icons.Filled.ArrowDownward, contentDescription = null) }
+                            leadingIcon = { 
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_sort),
+                                    contentDescription = null
+                                )
+                            }
                         )
                     }
                 }
@@ -117,7 +136,7 @@ fun MainScreen(
             FloatingActionButton(
                 onClick = { showAddDialog = true }
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add book")
+                Text("+", style = MaterialTheme.typography.headlineMedium)
             }
         },
         bottomBar = {
@@ -125,19 +144,34 @@ fun MainScreen(
                 NavigationBarItem(
                     selected = true,
                     onClick = { },
-                    icon = { Icon(Icons.Filled.MenuBook, contentDescription = null) },
+                    icon = { 
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_book),
+                            contentDescription = null
+                        )
+                    },
                     label = { Text("Books") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { },
-                    icon = { Icon(Icons.Filled.Bookmark, contentDescription = null) },
+                    icon = { 
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_bookmark),
+                            contentDescription = null
+                        )
+                    },
                     label = { Text("Reading") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { },
-                    icon = { Icon(Icons.Filled.MenuBook, contentDescription = null) },
+                    icon = { 
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_chart),
+                            contentDescription = null
+                        )
+                    },
                     label = { Text("Goals") }
                 )
             }
@@ -229,32 +263,32 @@ fun StatsDialog(
                 StatItem(
                     value = totalBooks,
                     label = "Total Books",
-                    icon = Icons.Filled.MenuBook
+                    iconRes = R.drawable.ic_book
                 )
                 StatItem(
                     value = readBooks,
                     label = "Read Books",
-                    icon = Icons.Filled.Done
+                    iconRes = R.drawable.ic_book
                 )
                 StatItem(
                     value = readingBooks,
                     label = "Reading",
-                    icon = Icons.Filled.Bookmark
+                    iconRes = R.drawable.ic_bookmark
                 )
                 StatItem(
                     value = toReadBooks,
                     label = "To Read",
-                    icon = Icons.Filled.MenuBook
+                    iconRes = R.drawable.ic_book
                 )
                 StatItem(
                     value = totalPages,
                     label = "Total Pages",
-                    icon = Icons.Filled.MenuBook
+                    iconRes = R.drawable.ic_book
                 )
                 StatItem(
                     value = readPages,
                     label = "Pages Read",
-                    icon = Icons.Filled.Done
+                    iconRes = R.drawable.ic_book
                 )
             }
         },
@@ -271,7 +305,7 @@ fun StatsDialog(
 fun StatItem(
     value: Int,
     label: String,
-    icon: ImageVector
+    iconRes: Int
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -282,7 +316,10 @@ fun StatItem(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null)
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null
+            )
             Text(label)
         }
         Text(

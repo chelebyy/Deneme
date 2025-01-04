@@ -1,22 +1,18 @@
 package com.example.deneme.ui.screens
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.deneme.R
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
 
@@ -54,7 +50,7 @@ fun BookCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .padding(4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -71,7 +67,7 @@ fun BookCard(
                     style = MaterialTheme.typography.titleMedium
                 )
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete book")
+                    Icon(Icons.Default.Delete, contentDescription = "Delete book")
                 }
             }
             
@@ -92,12 +88,11 @@ fun BookCard(
                 
                 Row {
                     IconButton(
-                        onClick = { onStatusChange(ReadingStatus.TO_READ) },
-                        enabled = book.status != ReadingStatus.TO_READ
+                        onClick = { onStatusChange(ReadingStatus.TO_READ) }
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.MenuBook,
-                            contentDescription = "Mark as to read",
+                            painter = painterResource(id = R.drawable.ic_book),
+                            contentDescription = "To Read",
                             tint = if (book.status == ReadingStatus.TO_READ) 
                                 MaterialTheme.colorScheme.primary 
                             else 
@@ -106,12 +101,11 @@ fun BookCard(
                     }
                     
                     IconButton(
-                        onClick = { onStatusChange(ReadingStatus.READING) },
-                        enabled = book.status != ReadingStatus.READING
+                        onClick = { onStatusChange(ReadingStatus.READING) }
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Bookmark,
-                            contentDescription = "Mark as reading",
+                            painter = painterResource(id = R.drawable.ic_bookmark),
+                            contentDescription = "Reading",
                             tint = if (book.status == ReadingStatus.READING) 
                                 MaterialTheme.colorScheme.primary 
                             else 
@@ -120,12 +114,10 @@ fun BookCard(
                     }
                     
                     IconButton(
-                        onClick = { onStatusChange(ReadingStatus.READ) },
-                        enabled = book.status != ReadingStatus.READ
+                        onClick = { onStatusChange(ReadingStatus.READ) }
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Done,
-                            contentDescription = "Mark as read",
+                        Icon(Icons.Default.Done, 
+                            contentDescription = "Read",
                             tint = if (book.status == ReadingStatus.READ) 
                                 MaterialTheme.colorScheme.primary 
                             else 
