@@ -21,6 +21,7 @@ fun MainScreen(
 ) {
     var showAddBookDialog by remember { mutableStateOf(false) }
     var showReadingGoalDialog by remember { mutableStateOf(false) }
+    var showSearchDialog by remember { mutableStateOf(false) }
     var errorState by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -41,6 +42,13 @@ fun MainScreen(
     val navController = rememberNavController()
     
     Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showSearchDialog = true }
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Book")
+            }
+        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
@@ -82,7 +90,7 @@ fun MainScreen(
                 composable("book_list") {
                     BookList(
                         viewModel = viewModel,
-                        onAddBookClick = { showAddBookDialog = true }
+                        onAddBookClick = { showSearchDialog = true }
                     )
 
                     if (showAddBookDialog) {
@@ -94,6 +102,12 @@ fun MainScreen(
                     if (showReadingGoalDialog) {
                         ReadingGoalDialog(
                             onDismiss = { showReadingGoalDialog = false }
+                        )
+                    }
+                    if (showSearchDialog) {
+                        SearchBookDialog(
+                            onDismiss = { showSearchDialog = false },
+                            viewModel = viewModel
                         )
                     }
                 }
