@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Kitap 1 -->
+    <path
+        android:fillColor="#E57373"
+        android:pathData="M20,20h160v30h-160z"/>
+
+    <!-- Kitap 2 -->
+    <path
+        android:fillColor="#64B5F6"
+        android:pathData="M25,50h150v30h-150z"/>
+
+    <!-- Kitap 3 -->
+    <path
+        android:fillColor="#81C784"
+        android:pathData="M30,80h140v30h-140z"/>
+
+    <!-- Kitap 4 -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M35,110h130v30h-130z"/>
+
+    <!-- Kitap 5 -->
+    <path
+        android:fillColor="#BA68C8"
+        android:pathData="M40,140h120v30h-120z"/>
+
+    <!-- Kitapların kenar çizgileri -->
+    <path
+        android:strokeColor="#424242"
+        android:strokeWidth="1"
+        android:strokeAlpha="0.3"
+        android:pathData="M20,20h160v30h-160z
+                         M25,50h150v30h-150z
+                         M30,80h140v30h-140z
+                         M35,110h130v30h-130z
+                         M40,140h120v30h-120z"/>
+</vector> 
