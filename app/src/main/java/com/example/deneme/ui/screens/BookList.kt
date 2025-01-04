@@ -4,49 +4,60 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.deneme.data.model.Book
+import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.ui.viewmodel.BookViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookList(
     viewModel: BookViewModel,
-    onAddBookClick: () -> Unit
+    onAddBookClick: () -> Unit,
+    onEditClick: (Book) -> Unit,
+    currentTab: Int,
+    showSearchBar: Boolean = false
 ) {
-    var showSearchBar by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     val books by viewModel.books.collectAsState()
 
-    Column {
-        TopAppBar(
-            title = { Text("Kitaplarım") },
-            actions = {
-                IconButton(onClick = { showSearchBar = !showSearchBar }) {
-                    Icon(Icons.Default.Search, contentDescription = "Ara")
-                }
-                IconButton(onClick = onAddBookClick) {
-                    Icon(Icons.Default.Add, contentDescription = "Kitap Ekle")
-                }
-            }
-        )
+    // Arama çubuğu kapandığında sorguyu sıfırla
+    LaunchedEffect(showSearchBar) {
+        if (!showSearchBar) {
+            searchQuery = ""
+        }
+    }
 
+    // Kitapları duruma göre filtrele
+    val filteredBooks = when (currentTab) {
+        0 -> books // Tümü
+        1 -> books.filter { it.status == ReadingStatus.TO_READ } // Okunacak
+        2 -> books.filter { it.status == ReadingStatus.READING } // Okunuyor
+        3 -> books.filter { it.status == ReadingStatus.READ } // Okunan
+        else -> books
+    }.filter { book ->
+        if (searchQuery.isBlank()) true
+        else {
+            book.title.contains(searchQuery, ignoreCase = true) ||
+            book.author.contains(searchQuery, ignoreCase = true)
+        }
+    }
+
+    Column {
         if (showSearchBar) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { query ->
                     searchQuery = query
-                    viewModel.searchBooks(query)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                placeholder = { Text("Kitap veya yazar ara...") },
+                placeholder = { Text("Kitaplığında ara...") },
                 singleLine = true
             )
         }
@@ -56,11 +67,19 @@ fun BookList(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(books) { book ->
+            items(filteredBooks) { book ->
                 BookItem(
                     book = book,
-                    onEditClick = { /* TODO: Edit book */ },
-                    onDeleteClick = { viewModel.deleteBook(book) }
+                    onEditClick = onEditClick,
+                    onDeleteClick = { 
+                        viewModel.deleteBook(book)
+                        viewModel.loadBooks()
+                    },
+                    onStatusChange = { newStatus ->
+                        val updatedBook = book.copy(status = newStatus)
+                        viewModel.updateBook(updatedBook)
+                        viewModel.loadBooks()
+                    }
                 )
             }
         }
@@ -71,9 +90,12 @@ fun BookList(
 @Composable
 fun BookItem(
     book: Book,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onEditClick: (Book) -> Unit,
+    onDeleteClick: () -> Unit,
+    onStatusChange: (ReadingStatus) -> Unit
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -103,11 +125,53 @@ fun BookItem(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onEditClick) {
-                    Text("Düzenle")
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Düzenle")
+                    }
+                    
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Okunacak") },
+                            leadingIcon = { Icon(Icons.Default.Bookmark, contentDescription = null) },
+                            onClick = {
+                                onStatusChange(ReadingStatus.TO_READ)
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Okunuyor") },
+                            leadingIcon = { Icon(Icons.Default.AutoStories, contentDescription = null) },
+                            onClick = {
+                                onStatusChange(ReadingStatus.READING)
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Okundu") },
+                            leadingIcon = { Icon(Icons.Default.Book, contentDescription = null) },
+                            onClick = {
+                                onStatusChange(ReadingStatus.READ)
+                                showMenu = false
+                            }
+                        )
+                        Divider()
+                        DropdownMenuItem(
+                            text = { Text("Düzenle") },
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                            onClick = {
+                                onEditClick(book)
+                                showMenu = false
+                            }
+                        )
+                    }
                 }
-                TextButton(onClick = onDeleteClick) {
-                    Text("Sil")
+                
+                IconButton(onClick = onDeleteClick) {
+                    Icon(Icons.Default.Delete, contentDescription = "Sil")
                 }
             }
         }

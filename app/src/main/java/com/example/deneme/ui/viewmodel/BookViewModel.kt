@@ -31,7 +31,7 @@ data class VolumeInfo(
 data class BookInfo(
     val title: String,
     val authors: List<String>? = null,
-    val description: String? = null
+    val pageCount: Int? = null
 )
 
 @HiltViewModel
@@ -40,6 +40,9 @@ class BookViewModel @Inject constructor(
 ) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
+    
+    private val _books = MutableStateFlow<List<Book>>(emptyList())
+    val books = _books.asStateFlow()
     
     val searchResults = mutableStateListOf<Book>()
 
@@ -50,20 +53,17 @@ class BookViewModel @Inject constructor(
 
     private val googleBooksApi = retrofit.create(GoogleBooksApi::class.java)
 
-    val books = _searchQuery
-        .debounce(300)
-        .flatMapLatest { query ->
-            if (query.isEmpty()) {
-                bookRepository.getAllBooks()
-            } else {
-                bookRepository.searchBooks(query)
+    init {
+        loadBooks()
+    }
+
+    fun loadBooks() {
+        viewModelScope.launch {
+            bookRepository.getAllBooks().collect { bookList ->
+                _books.value = bookList
             }
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    }
 
     fun searchBooks(query: String) {
         viewModelScope.launch {
@@ -75,9 +75,10 @@ class BookViewModel @Inject constructor(
                         searchResults.add(
                             Book(
                                 title = volume.volumeInfo.title,
-                                author = volume.volumeInfo.authors?.firstOrNull(),
-                                description = volume.volumeInfo.description,
-                                status = ReadingStatus.TO_READ
+                                author = volume.volumeInfo.authors?.firstOrNull() ?: "Bilinmeyen Yazar",
+                                pageCount = volume.volumeInfo.pageCount ?: 0,
+                                status = ReadingStatus.TO_READ,
+                                category = "Genel"
                             )
                         )
                     }
@@ -92,18 +93,21 @@ class BookViewModel @Inject constructor(
     fun addBook(book: Book) {
         viewModelScope.launch {
             bookRepository.insertBook(book)
+            loadBooks() // Kitap ekledikten sonra listeyi güncelle
         }
     }
 
     fun updateBook(book: Book) {
         viewModelScope.launch {
             bookRepository.updateBook(book)
+            loadBooks() // Kitap güncelledikten sonra listeyi güncelle
         }
     }
 
     fun deleteBook(book: Book) {
         viewModelScope.launch {
             bookRepository.deleteBook(book)
+            loadBooks() // Kitap sildikten sonra listeyi güncelle
         }
     }
 }

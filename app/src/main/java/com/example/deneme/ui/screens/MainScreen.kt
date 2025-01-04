@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.deneme.ui.viewmodel.BookViewModel
+import com.example.deneme.data.model.Book
 import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,12 +23,16 @@ fun MainScreen(
     var showAddBookDialog by remember { mutableStateOf(false) }
     var showReadingGoalDialog by remember { mutableStateOf(false) }
     var showSearchDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedBook by remember { mutableStateOf<Book?>(null) }
+    var currentTab by remember { mutableStateOf(0) }
     var errorState by remember { mutableStateOf<String?>(null) }
+    var showSearchBar by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         try {
-            // Hata ayıklama için log
             Log.d("MainScreen", "ViewModel başlatılıyor: $viewModel")
+            viewModel.loadBooks() // Kitapları yükle
         } catch (e: Exception) {
             Log.e("MainScreen", "ViewModel hatası: ${e.message}", e)
             errorState = "ViewModel Hatası: ${e.message}"
@@ -42,38 +47,51 @@ fun MainScreen(
     val navController = rememberNavController()
     
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showSearchDialog = true }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Book")
-            }
+        topBar = {
+            TopAppBar(
+                title = { Text("Kitaplarım") },
+                navigationIcon = {
+                    if (showSearchBar) {
+                        IconButton(onClick = { showSearchBar = false }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                        }
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showSearchBar = !showSearchBar }) {
+                        Icon(Icons.Default.Search, contentDescription = "Ara")
+                    }
+                    IconButton(onClick = { showSearchDialog = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Kitap Ekle")
+                    }
+                }
+            )
         },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    selected = true,
-                    onClick = { /* TODO */ },
+                    selected = currentTab == 0,
+                    onClick = { currentTab = 0 },
                     icon = { Icon(Icons.Filled.MenuBook, contentDescription = "Tüm Kitaplar") },
                     label = { Text("Tümü") }
                 )
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { /* TODO */ },
+                    selected = currentTab == 1,
+                    onClick = { currentTab = 1 },
                     icon = { Icon(Icons.Filled.Bookmark, contentDescription = "Okunacaklar") },
                     label = { Text("Okunacak") }
                 )
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { /* TODO */ },
+                    selected = currentTab == 2,
+                    onClick = { currentTab = 2 },
                     icon = { Icon(Icons.Filled.AutoStories, contentDescription = "Okunuyor") },
                     label = { Text("Okunuyor") }
                 )
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { /* TODO */ },
+                    selected = currentTab == 3,
+                    onClick = { currentTab = 3 },
                     icon = { Icon(Icons.Filled.Book, contentDescription = "Okunanlar") },
-                    label = { Text("Okunan") }
+                    label = { Text("Okundu") }
                 )
             }
         }
@@ -90,12 +108,21 @@ fun MainScreen(
                 composable("book_list") {
                     BookList(
                         viewModel = viewModel,
-                        onAddBookClick = { showSearchDialog = true }
+                        onAddBookClick = { showSearchDialog = true },
+                        onEditClick = { book ->
+                            selectedBook = book
+                            showEditDialog = true
+                        },
+                        currentTab = currentTab,
+                        showSearchBar = showSearchBar
                     )
 
                     if (showAddBookDialog) {
                         AddBookDialog(
-                            onDismiss = { showAddBookDialog = false },
+                            onDismiss = { 
+                                showAddBookDialog = false
+                                viewModel.loadBooks() // Kitapları yeniden yükle
+                            },
                             viewModel = viewModel
                         )
                     }
@@ -106,8 +133,27 @@ fun MainScreen(
                     }
                     if (showSearchDialog) {
                         SearchBookDialog(
-                            onDismiss = { showSearchDialog = false },
+                            onDismiss = { 
+                                showSearchDialog = false
+                                viewModel.loadBooks() // Kitapları yeniden yükle
+                            },
                             viewModel = viewModel
+                        )
+                    }
+                    if (showEditDialog && selectedBook != null) {
+                        EditBookDialog(
+                            book = selectedBook!!,
+                            onDismiss = { 
+                                showEditDialog = false
+                                selectedBook = null
+                                viewModel.loadBooks() // Kitapları yeniden yükle
+                            },
+                            viewModel = viewModel,
+                            onBookUpdated = {
+                                showEditDialog = false
+                                selectedBook = null
+                                viewModel.loadBooks()
+                            }
                         )
                     }
                 }

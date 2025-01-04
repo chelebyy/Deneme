@@ -10,13 +10,15 @@ import com.example.deneme.data.model.ReadingStatus
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.deneme.ui.components.ReadingStatusDropdown
+import com.example.deneme.ui.viewmodel.BookViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditBookDialog(
     book: Book,
     onDismiss: () -> Unit,
-    onBookUpdated: (Book) -> Unit
+    onBookUpdated: (Book) -> Unit,
+    viewModel: BookViewModel
 ) {
     var title by remember { mutableStateOf(book.title) }
     var author by remember { mutableStateOf(book.author) }
@@ -87,17 +89,16 @@ fun EditBookDialog(
             TextButton(
                 onClick = {
                     if (title.isNotBlank() && author.isNotBlank() && pageCount.isNotBlank()) {
-                        onBookUpdated(
-                            book.copy(
-                                title = title,
-                                author = author,
-                                pageCount = pageCount.toIntOrNull() ?: 0,
-                                status = status,
-                                category = category,
-                                currentPage = currentPage.toIntOrNull() ?: 0
-                            )
+                        val updatedBook = book.copy(
+                            title = title,
+                            author = author,
+                            pageCount = pageCount.toIntOrNull() ?: 0,
+                            status = status,
+                            category = category,
+                            currentPage = currentPage.toIntOrNull() ?: 0
                         )
-                        onDismiss()
+                        viewModel.updateBook(updatedBook)
+                        onBookUpdated(updatedBook)
                     }
                 }
             ) {
