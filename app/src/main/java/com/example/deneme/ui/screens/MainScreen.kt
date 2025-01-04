@@ -41,19 +41,6 @@ fun MainScreen(
     val navController = rememberNavController()
     
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Kitaplığım") },
-                actions = {
-                    IconButton(onClick = { showReadingGoalDialog = true }) {
-                        Icon(Icons.Outlined.Assessment, contentDescription = "Okuma Hedefleri")
-                    }
-                    IconButton(onClick = { showAddBookDialog = true }) {
-                        Icon(Icons.Outlined.Add, contentDescription = "Kitap Ekle")
-                    }
-                }
-            )
-        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
@@ -67,6 +54,12 @@ fun MainScreen(
                     onClick = { /* TODO */ },
                     icon = { Icon(Icons.Filled.Bookmark, contentDescription = "Okunacaklar") },
                     label = { Text("Okunacak") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { /* TODO */ },
+                    icon = { Icon(Icons.Filled.AutoStories, contentDescription = "Okunuyor") },
+                    label = { Text("Okunuyor") }
                 )
                 NavigationBarItem(
                     selected = false,
