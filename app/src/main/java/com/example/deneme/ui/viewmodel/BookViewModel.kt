@@ -1,5 +1,7 @@
 package com.example.deneme.ui.viewmodel
 
+import android.content.Context
+import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.deneme.data.api.GoogleBooksApi
@@ -9,6 +11,9 @@ import com.example.deneme.data.repository.BookRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,8 +25,19 @@ class BookViewModel @Inject constructor(
     private val _books = MutableStateFlow<List<Book>>(emptyList())
     val allBooks: StateFlow<List<Book>> = _books.asStateFlow()
 
+    data class UiState(
+        val message: String = ""
+    )
+
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
     init {
         println("BookViewModel init başladı")
+        loadBooks()
+    }
+
+    private fun refreshBookList() {
         loadBooks()
     }
 
@@ -109,6 +125,34 @@ class BookViewModel @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
                 onResult(emptyList())
+            }
+        }
+    }
+
+    fun backupDatabase(context: Context) {
+        viewModelScope.launch {
+            try {
+                val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                val backupFile = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "kitap_yedek_$timestamp.json"
+                )
+                repository.backupData(backupFile)
+                _uiState.update { it.copy(message = "Yedekleme başarılı!\nDosya konumu: İndirilenler/kitap_yedek_$timestamp.json") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(message = "Yedekleme hatası: ${e.message}") }
+            }
+        }
+    }
+
+    fun restoreDatabase(file: File) {
+        viewModelScope.launch {
+            try {
+                repository.restoreData(file)
+                _uiState.update { it.copy(message = "Veriler başarıyla geri yüklendi!") }
+                refreshBookList()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(message = "Geri yükleme hatası: ${e.message}") }
             }
         }
     }

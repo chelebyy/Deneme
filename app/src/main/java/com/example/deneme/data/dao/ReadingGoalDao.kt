@@ -23,4 +23,10 @@ interface ReadingGoalDao {
 
     @Query("UPDATE reading_goals SET completedBooks = completedBooks + 1 WHERE year = :year")
     suspend fun incrementCompletedBooks(year: Int)
+
+    @Query("SELECT * FROM reading_goals")
+    suspend fun getAllGoalsList(): List<ReadingGoal>
+
+    @Query("DELETE FROM reading_goals")
+    suspend fun deleteAllGoals()
 } 

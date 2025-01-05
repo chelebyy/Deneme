@@ -1,5 +1,9 @@
 package com.example.deneme.ui.screens
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -8,19 +12,24 @@ import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.deneme.data.model.Book
 import com.example.deneme.ui.viewmodel.BookViewModel
 import com.example.deneme.ui.viewmodel.ReadingGoalViewModel
+import java.io.File
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Restore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: BookViewModel,
-    readingGoalViewModel: ReadingGoalViewModel,
     isDarkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
     var currentTab by remember { mutableStateOf(0) }
     var showSearchBar by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
@@ -28,11 +37,46 @@ fun MainScreen(
     var selectedBook by remember { mutableStateOf<Book?>(null) }
     var showFilterMenu by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf<String?>(null) }
+    var showBackupMenu by remember { mutableStateOf(false) }
+    
+    val snackbarHostState = remember { SnackbarHostState() }
+    val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(uiState.message) {
+        if (uiState.message.isNotEmpty()) {
+            snackbarHostState.showSnackbar(
+                message = uiState.message,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let {
+                val file = File(context.cacheDir, "temp_backup.json")
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                viewModel.restoreDatabase(file)
+            }
+        }
+    )
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Kitaplığım") },
+                title = { 
+                    Text(
+                        "Kitaplığım",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) 
+                },
                 actions = {
                     IconButton(onClick = { onThemeChange(!isDarkTheme) }) {
                         Icon(
@@ -95,6 +139,36 @@ fun MainScreen(
                                 onClick = {
                                     selectedFilter = "Sayfa"
                                     showFilterMenu = false
+                                }
+                            )
+                        }
+                    }
+                    Box {
+                        IconButton(onClick = { showBackupMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Yedekleme Menüsü")
+                        }
+                        DropdownMenu(
+                            expanded = showBackupMenu,
+                            onDismissRequest = { showBackupMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Yedekle") },
+                                onClick = {
+                                    viewModel.backupDatabase(context)
+                                    showBackupMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Save, contentDescription = "Yedekle")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Geri Yükle") },
+                                onClick = {
+                                    filePickerLauncher.launch("application/json")
+                                    showBackupMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Restore, contentDescription = "Geri Yükle")
                                 }
                             )
                         }

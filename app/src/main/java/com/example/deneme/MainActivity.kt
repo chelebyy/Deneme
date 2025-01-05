@@ -18,6 +18,7 @@ import com.example.deneme.ui.theme.DenemeTheme
 import com.example.deneme.ui.viewmodel.BookViewModel
 import com.example.deneme.ui.viewmodel.ReadingGoalViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
             setContent {
                 val systemInDarkTheme = isSystemInDarkTheme()
                 var isDarkTheme by remember { mutableStateOf(systemInDarkTheme) }
+                val bookViewModel: BookViewModel = hiltViewModel()
                 
                 LaunchedEffect(Unit) {
                     kotlinx.coroutines.delay(1000)
@@ -50,11 +52,8 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        val bookViewModel: BookViewModel = hiltViewModel()
-                        val readingGoalViewModel: ReadingGoalViewModel = hiltViewModel()
                         MainScreen(
                             viewModel = bookViewModel,
-                            readingGoalViewModel = readingGoalViewModel,
                             isDarkTheme = isDarkTheme,
                             onThemeChange = { isDarkTheme = it }
                         )

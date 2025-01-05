@@ -7,9 +7,16 @@ import javax.inject.Inject
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.example.deneme.data.dao.ReadingGoalDao
+import com.example.deneme.data.model.ReadingGoal
 
 class BookRepository @Inject constructor(
-    private val bookDao: BookDao
+    private val bookDao: BookDao,
+    private val readingGoalDao: ReadingGoalDao
 ) {
     fun getAllBooks(): Flow<List<Book>> = bookDao.getAllBooks()
 
@@ -33,5 +40,35 @@ class BookRepository @Inject constructor(
         val books: List<Book> = gson.fromJson(json, type)
         bookDao.deleteAllBooks()
         books.forEach { bookDao.insertBook(it) }
+    }
+
+    data class BackupData(
+        val books: List<Book>,
+        val readingGoals: List<ReadingGoal>
+    )
+
+    suspend fun backupData(file: File) = withContext(Dispatchers.IO) {
+        val books = bookDao.getBooksList()
+        val goals = readingGoalDao.getAllGoalsList()
+        val backupData = BackupData(books, goals)
+        
+        FileWriter(file).use { writer ->
+            Gson().toJson(backupData, writer)
+        }
+    }
+
+    suspend fun restoreData(file: File) = withContext(Dispatchers.IO) {
+        FileReader(file).use { reader ->
+            val backupData = Gson().fromJson(reader, BackupData::class.java)
+            bookDao.deleteAllBooks()
+            readingGoalDao.deleteAllGoals()
+            
+            backupData.books.forEach { book ->
+                bookDao.insertBook(book)
+            }
+            backupData.readingGoals.forEach { goal ->
+                readingGoalDao.insertGoal(goal)
+            }
+        }
     }
 }
