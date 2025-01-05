@@ -14,6 +14,7 @@ import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.ui.viewmodel.BookViewModel
 import kotlinx.coroutines.flow.Flow
+import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +27,9 @@ fun BookList(
     selectedFilter: String? = null
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val books by viewModel.allBooks.collectAsState(initial = emptyList())
+    val books by viewModel.allBooks.collectAsState()
+
+    println("BookList yeniden compose ediliyor. Kitap sayısı: ${books.size}")
 
     // Sayfa her açıldığında ve arama çubuğu kapandığında sorguyu sıfırla
     LaunchedEffect(Unit, showSearchBar) {

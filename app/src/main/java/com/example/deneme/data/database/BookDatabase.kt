@@ -7,7 +7,7 @@ import com.example.deneme.data.dao.ReadingGoalDao
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingGoal
 
-@Database(entities = [Book::class, ReadingGoal::class], version = 1, exportSchema = false)
+@Database(entities = [Book::class, ReadingGoal::class], version = 2, exportSchema = false)
 abstract class BookDatabase : RoomDatabase() {
     abstract fun bookDao(): BookDao
     abstract fun readingGoalDao(): ReadingGoalDao

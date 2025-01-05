@@ -94,10 +94,21 @@ fun SearchBookDialog(
                             ListItem(
                                 headlineContent = { Text(book.title) },
                                 supportingContent = { Text(book.author) },
-                                modifier = Modifier.clickable {
-                                    viewModel.addBook(book)
-                                    onDismiss()
-                                }
+                                trailingContent = {
+                                    IconButton(
+                                        onClick = {
+                                            viewModel.addBook(book)
+                                            onDismiss()
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Add,
+                                            contentDescription = "Kitabı Ekle",
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
                             )
                             Divider()
                         }

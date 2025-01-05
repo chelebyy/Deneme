@@ -7,8 +7,7 @@ import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.data.repository.BookRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,17 +17,46 @@ class BookViewModel @Inject constructor(
     private val googleBooksApi: GoogleBooksApi
 ) : ViewModel() {
 
-    val allBooks: Flow<List<Book>> = repository.getAllBooks()
-        .catch { e ->
-            e.printStackTrace()
-            emit(emptyList())
+    private val _books = MutableStateFlow<List<Book>>(emptyList())
+    val allBooks: StateFlow<List<Book>> = _books.asStateFlow()
+
+    init {
+        println("BookViewModel init başladı")
+        loadBooks()
+    }
+
+    private fun loadBooks() {
+        viewModelScope.launch {
+            println("Kitaplar yükleniyor...")
+            try {
+                repository.getAllBooks()
+                    .catch { e ->
+                        println("Kitapları yüklerken hata: ${e.message}")
+                        e.printStackTrace()
+                        emit(emptyList())
+                    }
+                    .collect { books ->
+                        println("Kitaplar başarıyla yüklendi. Toplam: ${books.size} kitap")
+                        _books.value = books
+                    }
+            } catch (e: Exception) {
+                println("Kitapları yüklerken beklenmeyen hata: ${e.message}")
+                e.printStackTrace()
+            }
         }
+    }
 
     fun addBook(book: Book) {
         viewModelScope.launch {
             try {
-                repository.insertBook(book)
+                val newBook = book.copy(id = 0)
+                println("Kitap ekleniyor: ${newBook.title}")
+                repository.insertBook(newBook)
+                println("Kitap başarıyla eklendi: ${newBook.title}")
+                // Kitapları yeniden yükle
+                loadBooks()
             } catch (e: Exception) {
+                println("Kitap eklenirken hata: ${e.message}")
                 e.printStackTrace()
             }
         }
