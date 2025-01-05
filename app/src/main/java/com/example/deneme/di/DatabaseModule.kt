@@ -2,9 +2,9 @@ package com.example.deneme.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.deneme.data.database.BookDatabase
-import com.example.deneme.data.database.BookDao
-import com.example.deneme.data.database.ReadingGoalDao
+import com.example.deneme.data.database.AppDatabase
+import com.example.deneme.data.dao.BookDao
+import com.example.deneme.data.dao.ReadingGoalDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,23 +18,23 @@ object DatabaseModule {
     
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): BookDatabase {
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
             context,
-            BookDatabase::class.java,
-            BookDatabase.DATABASE_NAME
-        )
-        .fallbackToDestructiveMigration() // Veritabanı sürüm değişikliklerinde verileri sıfırlar
-        .build()
+            AppDatabase::class.java,
+            "app_database"
+        ).build()
     }
 
     @Provides
-    fun provideBookDao(database: BookDatabase): BookDao {
+    @Singleton
+    fun provideBookDao(database: AppDatabase): BookDao {
         return database.bookDao()
     }
 
     @Provides
-    fun provideReadingGoalDao(database: BookDatabase): ReadingGoalDao {
+    @Singleton
+    fun provideReadingGoalDao(database: AppDatabase): ReadingGoalDao {
         return database.readingGoalDao()
     }
 }

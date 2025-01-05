@@ -1,34 +1,25 @@
 package com.example.deneme.data.repository
 
-import com.example.deneme.data.database.ReadingGoalDao
-import com.example.deneme.data.database.ReadingGoalEntity
+import com.example.deneme.data.dao.ReadingGoalDao
 import com.example.deneme.data.model.ReadingGoal
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ReadingGoalRepository @Inject constructor(
     private val readingGoalDao: ReadingGoalDao
 ) {
-    fun getCurrentGoal(): Flow<ReadingGoal?> =
-        readingGoalDao.getAllGoals()
-            .map { goals ->
-                goals.firstOrNull()?.toDomainModel()
-            }
+    fun getGoalForYear(year: Int): Flow<ReadingGoal?> =
+        readingGoalDao.getGoalForYear(year)
 
-    suspend fun updateGoal(goal: ReadingGoal) {
-        readingGoalDao.insertGoal(goal.toEntity())
-    }
+    suspend fun setGoal(goal: ReadingGoal) =
+        readingGoalDao.insertGoal(goal)
 
-    private fun ReadingGoalEntity.toDomainModel() = ReadingGoal(
-        id = id,
-        targetBooks = targetBooks,
-        completedBooks = completedBooks
-    )
+    suspend fun updateGoal(goal: ReadingGoal) =
+        readingGoalDao.updateGoal(goal)
 
-    private fun ReadingGoal.toEntity() = ReadingGoalEntity(
-        id = id,
-        targetBooks = targetBooks,
-        completedBooks = completedBooks
-    )
+    suspend fun deleteGoal(goal: ReadingGoal) =
+        readingGoalDao.deleteGoal(goal)
+
+    suspend fun incrementCompletedBooks(year: Int) =
+        readingGoalDao.incrementCompletedBooks(year)
 }

@@ -1,5 +1,6 @@
 package com.example.deneme.ui.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import javax.inject.Inject
+import java.io.File
 
 interface GoogleBooksApi {
     @GET("volumes")
@@ -65,29 +67,26 @@ class BookViewModel @Inject constructor(
         }
     }
 
-    fun searchBooks(query: String) {
-        viewModelScope.launch {
-            try {
-                if (query.length >= 3) {
-                    val response = googleBooksApi.searchBooks(query)
-                    searchResults.clear()
-                    response.items?.forEach { volume ->
-                        searchResults.add(
-                            Book(
-                                title = volume.volumeInfo.title,
-                                author = volume.volumeInfo.authors?.firstOrNull() ?: "Bilinmeyen Yazar",
-                                pageCount = volume.volumeInfo.pageCount ?: 0,
-                                status = ReadingStatus.TO_READ,
-                                category = "Genel"
-                            )
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                // Handle error
+    suspend fun searchBooks(query: String): List<Book> {
+        return try {
+            if (query.length >= 3) {
+                val response = googleBooksApi.searchBooks(query)
+                response.items?.map { volume ->
+                    Book(
+                        id = 0,
+                        title = volume.volumeInfo.title,
+                        author = volume.volumeInfo.authors?.firstOrNull() ?: "Bilinmeyen Yazar",
+                        pageCount = volume.volumeInfo.pageCount ?: 0,
+                        status = ReadingStatus.TO_READ
+                    )
+                } ?: emptyList()
+            } else {
+                emptyList()
             }
+        } catch (e: Exception) {
+            Log.e("BookViewModel", "Kitap arama hatası: ${e.message}", e)
+            emptyList()
         }
-        _searchQuery.value = query
     }
 
     fun addBook(book: Book) {
@@ -108,6 +107,18 @@ class BookViewModel @Inject constructor(
         viewModelScope.launch {
             bookRepository.deleteBook(book)
             loadBooks() // Kitap sildikten sonra listeyi güncelle
+        }
+    }
+
+    fun backupBooks(file: File) {
+        viewModelScope.launch {
+            bookRepository.backupBooks(file)
+        }
+    }
+
+    fun restoreBooks(file: File) {
+        viewModelScope.launch {
+            bookRepository.restoreBooks(file)
         }
     }
 }

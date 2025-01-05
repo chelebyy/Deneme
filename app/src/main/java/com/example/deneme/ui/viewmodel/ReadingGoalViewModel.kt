@@ -5,44 +5,46 @@ import androidx.lifecycle.viewModelScope
 import com.example.deneme.data.model.ReadingGoal
 import com.example.deneme.data.repository.ReadingGoalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class ReadingGoalViewModel @Inject constructor(
     private val repository: ReadingGoalRepository
 ) : ViewModel() {
-    val currentGoal: StateFlow<ReadingGoal?> = repository.getCurrentGoal()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
 
-    fun updateYearlyGoal(targetBooks: Int) {
+    private val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    val currentGoal: Flow<ReadingGoal?> = repository.getGoalForYear(currentYear)
+
+    fun setGoal(targetBooks: Int) {
         viewModelScope.launch {
-            val currentGoalValue = currentGoal.value
-            val updatedGoal = currentGoalValue?.copy(
-                targetBooks = targetBooks
-            ) ?: ReadingGoal(
-                targetBooks = targetBooks,
-                completedBooks = 0
+            repository.setGoal(
+                ReadingGoal(
+                    year = currentYear,
+                    targetBooks = targetBooks,
+                    completedBooks = 0
+                )
             )
-            repository.updateGoal(updatedGoal)
         }
     }
 
-    fun updateMonthlyGoal(targetBooks: Int) {
+    fun updateGoal(goal: ReadingGoal) {
         viewModelScope.launch {
-            val currentGoalValue = currentGoal.value
-            val updatedGoal = currentGoalValue?.copy(
-                targetBooks = targetBooks
-            ) ?: ReadingGoal(
-                targetBooks = targetBooks,
-                completedBooks = 0
-            )
-            repository.updateGoal(updatedGoal)
+            repository.updateGoal(goal)
+        }
+    }
+
+    fun deleteGoal(goal: ReadingGoal) {
+        viewModelScope.launch {
+            repository.deleteGoal(goal)
+        }
+    }
+
+    fun incrementCompletedBooks() {
+        viewModelScope.launch {
+            repository.incrementCompletedBooks(currentYear)
         }
     }
 }

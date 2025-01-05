@@ -16,9 +16,16 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = DarkPrimary,
+    secondary = DarkSecondary,
+    background = DarkBackground,
+    surface = DarkSurface,
+    error = DarkError,
+    onPrimary = DarkOnPrimary,
+    onSecondary = DarkOnSecondary,
+    onBackground = DarkOnBackground,
+    onSurface = DarkOnSurface,
+    onError = DarkOnError
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -46,7 +53,7 @@ fun DenemeTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

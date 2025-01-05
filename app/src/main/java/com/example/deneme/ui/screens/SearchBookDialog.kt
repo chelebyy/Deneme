@@ -6,19 +6,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.AutoStories
-import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
@@ -31,44 +26,75 @@ fun SearchBookDialog(
     onDismiss: () -> Unit,
     viewModel: BookViewModel
 ) {
-    var showManualAddDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf<List<Book>>(emptyList()) }
+    var showManualAddDialog by remember { mutableStateOf(false) }
 
-    if (showManualAddDialog) {
-        ManualAddBookDialog(
-            onDismiss = { showManualAddDialog = false },
-            viewModel = viewModel
-        )
+    // Dialog her açıldığında arama sonuçlarını temizle
+    LaunchedEffect(Unit) {
+        searchQuery = ""
+        searchResults = emptyList()
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Kitap Ara") },
-        text = {
+    Dialog(
+        onDismissRequest = {
+            searchResults = emptyList() // Dialog kapanırken sonuçları temizle
+            onDismiss()
+        }
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 600.dp)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(16.dp)
             ) {
+                Text(
+                    text = "Kitap Ara",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { query ->
                         searchQuery = query
-                        viewModel.searchBooks(query)
+                        if (query.isBlank()) {
+                            searchResults = emptyList()
+                        } else {
+                            viewModel.viewModelScope.launch {
+                                try {
+                                    searchResults = viewModel.searchBooks(query)
+                                } catch (e: Exception) {
+                                    searchResults = emptyList()
+                                }
+                            }
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Kitap Adı veya Yazar") },
                     singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { 
+                                searchQuery = ""
+                                searchResults = emptyList()
+                            }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Temizle")
+                            }
+                        }
+                    }
                 )
 
                 Button(
                     onClick = { showManualAddDialog = true },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Manuel Kitap Ekle")
                 }
 
@@ -76,7 +102,7 @@ fun SearchBookDialog(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(viewModel.searchResults) { book ->
+                    items(searchResults) { book ->
                         SearchResultItem(
                             book = book,
                             onClick = {
@@ -87,13 +113,15 @@ fun SearchBookDialog(
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Kapat")
-            }
         }
-    )
+    }
+
+    if (showManualAddDialog) {
+        ManualAddBookDialog(
+            onDismiss = { showManualAddDialog = false },
+            viewModel = viewModel
+        )
+    }
 }
 
 @Composable
@@ -141,54 +169,58 @@ fun ManualAddBookDialog(
     var selectedStatus by remember { mutableStateOf(ReadingStatus.TO_READ) }
     var showStatusMenu by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Manuel Kitap Ekle") },
-        text = {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                Text(
+                    text = "Manuel Kitap Ekle",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("Kitap Adı") },
-                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 OutlinedTextField(
                     value = author,
                     onValueChange = { author = it },
                     label = { Text("Yazar") },
-                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 OutlinedTextField(
                     value = pageCount,
                     onValueChange = { pageCount = it },
                     label = { Text("Sayfa Sayısı") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                
-                Box(modifier = Modifier.fillMaxWidth()) {
+
+                Box {
                     OutlinedTextField(
-                        value = when(selectedStatus) {
+                        value = when (selectedStatus) {
                             ReadingStatus.TO_READ -> "Okunacak"
                             ReadingStatus.READING -> "Okunuyor"
                             ReadingStatus.READ -> "Okundu"
                         },
-                        onValueChange = { },
-                        label = { Text("Kategori") },
+                        onValueChange = {},
                         readOnly = true,
+                        label = { Text("Durum") },
                         trailingIcon = {
                             IconButton(onClick = { showStatusMenu = true }) {
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Kategori Seç")
+                                Icon(Icons.Default.ArrowDropDown, "Durum seç")
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -196,12 +228,10 @@ fun ManualAddBookDialog(
 
                     DropdownMenu(
                         expanded = showStatusMenu,
-                        onDismissRequest = { showStatusMenu = false },
-                        modifier = Modifier.fillMaxWidth()
+                        onDismissRequest = { showStatusMenu = false }
                     ) {
                         DropdownMenuItem(
                             text = { Text("Okunacak") },
-                            leadingIcon = { Icon(Icons.Default.Bookmark, contentDescription = null) },
                             onClick = {
                                 selectedStatus = ReadingStatus.TO_READ
                                 showStatusMenu = false
@@ -209,7 +239,6 @@ fun ManualAddBookDialog(
                         )
                         DropdownMenuItem(
                             text = { Text("Okunuyor") },
-                            leadingIcon = { Icon(Icons.Default.AutoStories, contentDescription = null) },
                             onClick = {
                                 selectedStatus = ReadingStatus.READING
                                 showStatusMenu = false
@@ -217,7 +246,6 @@ fun ManualAddBookDialog(
                         )
                         DropdownMenuItem(
                             text = { Text("Okundu") },
-                            leadingIcon = { Icon(Icons.Default.Book, contentDescription = null) },
                             onClick = {
                                 selectedStatus = ReadingStatus.READ
                                 showStatusMenu = false
@@ -225,32 +253,33 @@ fun ManualAddBookDialog(
                         )
                     }
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (title.isNotBlank() && author.isNotBlank()) {
-                        val book = Book(
-                            title = title,
-                            author = author,
-                            pageCount = pageCount.toIntOrNull() ?: 0,
-                            status = selectedStatus,
-                            category = "Genel",
-                            currentPage = 0
-                        )
-                        viewModel.addBook(book)
-                        onDismiss()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("İptal")
+                    }
+                    Button(
+                        onClick = {
+                            if (title.isNotBlank() && author.isNotBlank() && pageCount.isNotBlank()) {
+                                val book = Book(
+                                    title = title,
+                                    author = author,
+                                    pageCount = pageCount.toIntOrNull() ?: 0,
+                                    status = selectedStatus
+                                )
+                                viewModel.addBook(book)
+                                onDismiss()
+                            }
+                        },
+                        enabled = title.isNotBlank() && author.isNotBlank() && pageCount.isNotBlank()
+                    ) {
+                        Text("Ekle")
                     }
                 }
-            ) {
-                Text("Ekle")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("İptal")
             }
         }
-    )
+    }
 }

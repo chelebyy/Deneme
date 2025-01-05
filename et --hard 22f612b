@@ -1,0 +1,6 @@
+[33m22f612b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m İlk versiyon: Temel kitap yönetimi özellikleri eklendi
+[33m5a4db11[m Added book search functionality with Google Books API integration
+[33md68bb76[m Navigation bar updated: Added 'Okunuyor' section and removed top app bar
+[33m1c8fcc4[m Veritabanı yapısı güncellendi, okuma hedefleri eklendi ve UI iyileştirildi
+[33m3ddaa7f[m Değişiklik açıklaması
+[33m016f26e[m Initial commit
