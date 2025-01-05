@@ -3,9 +3,11 @@ package com.example.deneme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.deneme.ui.screens.MainScreen
@@ -20,7 +22,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         try {
             setContent {
-                DenemeTheme {
+                val systemInDarkTheme = isSystemInDarkTheme()
+                var isDarkTheme by remember { mutableStateOf(systemInDarkTheme) }
+                
+                DenemeTheme(darkTheme = isDarkTheme) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
@@ -29,7 +34,9 @@ class MainActivity : ComponentActivity() {
                         val readingGoalViewModel: ReadingGoalViewModel = hiltViewModel()
                         MainScreen(
                             viewModel = bookViewModel,
-                            readingGoalViewModel = readingGoalViewModel
+                            readingGoalViewModel = readingGoalViewModel,
+                            isDarkTheme = isDarkTheme,
+                            onThemeChange = { isDarkTheme = it }
                         )
                     }
                 }

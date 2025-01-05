@@ -3,6 +3,8 @@ package com.example.deneme.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -15,7 +17,9 @@ import com.example.deneme.ui.viewmodel.ReadingGoalViewModel
 @Composable
 fun MainScreen(
     viewModel: BookViewModel,
-    readingGoalViewModel: ReadingGoalViewModel
+    readingGoalViewModel: ReadingGoalViewModel,
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit
 ) {
     var currentTab by remember { mutableStateOf(0) }
     var showSearchBar by remember { mutableStateOf(false) }
@@ -30,6 +34,12 @@ fun MainScreen(
             TopAppBar(
                 title = { Text("Kitaplığım") },
                 actions = {
+                    IconButton(onClick = { onThemeChange(!isDarkTheme) }) {
+                        Icon(
+                            if (isDarkTheme) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                            contentDescription = if (isDarkTheme) "Açık Tema" else "Koyu Tema"
+                        )
+                    }
                     IconButton(onClick = { showSearchBar = !showSearchBar }) {
                         Icon(
                             if (showSearchBar) Icons.Default.Close else Icons.Default.Search,
