@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReadingGoalDao {
+    @Query("SELECT * FROM reading_goals")
+    fun getAllGoals(): Flow<List<ReadingGoal>>
+
     @Query("SELECT * FROM reading_goals WHERE year = :year")
     fun getGoalForYear(year: Int): Flow<ReadingGoal?>
 

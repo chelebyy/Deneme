@@ -2,7 +2,7 @@ package com.example.deneme.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.deneme.data.database.AppDatabase
+import com.example.deneme.data.database.BookDatabase
 import com.example.deneme.data.dao.BookDao
 import com.example.deneme.data.dao.ReadingGoalDao
 import dagger.Module
@@ -18,23 +18,25 @@ object DatabaseModule {
     
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+    fun provideBookDatabase(@ApplicationContext context: Context): BookDatabase {
         return Room.databaseBuilder(
             context,
-            AppDatabase::class.java,
-            "app_database"
-        ).build()
+            BookDatabase::class.java,
+            BookDatabase.DATABASE_NAME
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides
     @Singleton
-    fun provideBookDao(database: AppDatabase): BookDao {
+    fun provideBookDao(database: BookDatabase): BookDao {
         return database.bookDao()
     }
 
     @Provides
     @Singleton
-    fun provideReadingGoalDao(database: AppDatabase): ReadingGoalDao {
+    fun provideReadingGoalDao(database: BookDatabase): ReadingGoalDao {
         return database.readingGoalDao()
     }
 }

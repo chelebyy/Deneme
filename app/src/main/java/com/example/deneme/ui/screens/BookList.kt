@@ -3,8 +3,6 @@ package com.example.deneme.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.ui.viewmodel.BookViewModel
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +26,7 @@ fun BookList(
     selectedFilter: String? = null
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val books by viewModel.books.collectAsState()
+    val books by viewModel.allBooks.collectAsState(initial = emptyList())
 
     // Sayfa her açıldığında ve arama çubuğu kapandığında sorguyu sıfırla
     LaunchedEffect(Unit, showSearchBar) {
@@ -90,14 +89,9 @@ fun BookList(
                 BookItem(
                     book = book,
                     onEditClick = onEditClick,
-                    onDeleteClick = { 
-                        viewModel.deleteBook(book)
-                        viewModel.loadBooks()
-                    },
+                    onDeleteClick = { viewModel.deleteBook(book) },
                     onStatusChange = { newStatus ->
-                        val updatedBook = book.copy(status = newStatus)
-                        viewModel.updateBook(updatedBook)
-                        viewModel.loadBooks()
+                        viewModel.updateBook(book.copy(status = newStatus))
                     }
                 )
             }
@@ -141,7 +135,11 @@ fun BookItem(
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "Durum: ${book.status}",
+                        text = when(book.status) {
+                            ReadingStatus.TO_READ -> "Okunacak"
+                            ReadingStatus.READING -> "Okunuyor"
+                            ReadingStatus.READ -> "Okundu"
+                        },
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

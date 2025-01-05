@@ -1,124 +1,87 @@
 package com.example.deneme.ui.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.deneme.data.api.GoogleBooksApi
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.data.repository.BookRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Query
 import javax.inject.Inject
-import java.io.File
-
-interface GoogleBooksApi {
-    @GET("volumes")
-    suspend fun searchBooks(@Query("q") query: String): BooksResponse
-}
-
-data class BooksResponse(
-    val items: List<VolumeInfo>? = null
-)
-
-data class VolumeInfo(
-    val volumeInfo: BookInfo
-)
-
-data class BookInfo(
-    val title: String,
-    val authors: List<String>? = null,
-    val pageCount: Int? = null
-)
 
 @HiltViewModel
 class BookViewModel @Inject constructor(
-    private val bookRepository: BookRepository
+    private val repository: BookRepository,
+    private val googleBooksApi: GoogleBooksApi
 ) : ViewModel() {
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery = _searchQuery.asStateFlow()
-    
-    private val _books = MutableStateFlow<List<Book>>(emptyList())
-    val books = _books.asStateFlow()
-    
-    val searchResults = mutableStateListOf<Book>()
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("https://www.googleapis.com/books/v1/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val googleBooksApi = retrofit.create(GoogleBooksApi::class.java)
-
-    init {
-        loadBooks()
-    }
-
-    fun loadBooks() {
-        viewModelScope.launch {
-            bookRepository.getAllBooks().collect { bookList ->
-                _books.value = bookList
-            }
+    val allBooks: Flow<List<Book>> = repository.getAllBooks()
+        .catch { e ->
+            e.printStackTrace()
+            emit(emptyList())
         }
-    }
-
-    suspend fun searchBooks(query: String): List<Book> {
-        return try {
-            if (query.length >= 3) {
-                val response = googleBooksApi.searchBooks(query)
-                response.items?.map { volume ->
-                    Book(
-                        id = 0,
-                        title = volume.volumeInfo.title,
-                        author = volume.volumeInfo.authors?.firstOrNull() ?: "Bilinmeyen Yazar",
-                        pageCount = volume.volumeInfo.pageCount ?: 0,
-                        status = ReadingStatus.TO_READ
-                    )
-                } ?: emptyList()
-            } else {
-                emptyList()
-            }
-        } catch (e: Exception) {
-            Log.e("BookViewModel", "Kitap arama hatası: ${e.message}", e)
-            emptyList()
-        }
-    }
 
     fun addBook(book: Book) {
         viewModelScope.launch {
-            bookRepository.insertBook(book)
-            loadBooks() // Kitap ekledikten sonra listeyi güncelle
+            try {
+                repository.insertBook(book)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun updateBook(book: Book) {
         viewModelScope.launch {
-            bookRepository.updateBook(book)
-            loadBooks() // Kitap güncelledikten sonra listeyi güncelle
+            try {
+                repository.updateBook(book)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun deleteBook(book: Book) {
         viewModelScope.launch {
-            bookRepository.deleteBook(book)
-            loadBooks() // Kitap sildikten sonra listeyi güncelle
+            try {
+                repository.deleteBook(book)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
-    fun backupBooks(file: File) {
+    fun searchBooks(query: String, onResult: (List<Book>) -> Unit) {
         viewModelScope.launch {
-            bookRepository.backupBooks(file)
-        }
-    }
-
-    fun restoreBooks(file: File) {
-        viewModelScope.launch {
-            bookRepository.restoreBooks(file)
+            try {
+                val response = googleBooksApi.searchBooks(query)
+                val books = response.items?.mapNotNull { volume ->
+                    try {
+                        val bookInfo = volume.volumeInfo
+                        if (!bookInfo.title.isNullOrBlank()) {
+                            Book(
+                                id = 0,
+                                title = bookInfo.title,
+                                author = bookInfo.authors?.firstOrNull() ?: "Bilinmeyen Yazar",
+                                pageCount = bookInfo.pageCount ?: 0,
+                                status = ReadingStatus.TO_READ,
+                                category = "",
+                                currentPage = 0
+                            )
+                        } else null
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
+                } ?: emptyList()
+                onResult(books)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onResult(emptyList())
+            }
         }
     }
 }

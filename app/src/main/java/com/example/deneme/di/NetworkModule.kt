@@ -1,6 +1,6 @@
 package com.example.deneme.di
 
-import com.example.deneme.data.api.GoogleBooksService
+import com.example.deneme.data.api.GoogleBooksApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,7 +38,7 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideGoogleBooksService(retrofit: Retrofit): GoogleBooksService {
-        return retrofit.create(GoogleBooksService::class.java)
+    fun provideGoogleBooksApi(retrofit: Retrofit): GoogleBooksApi {
+        return retrofit.create(GoogleBooksApi::class.java)
     }
 } 

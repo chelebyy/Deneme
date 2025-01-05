@@ -18,20 +18,24 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            DenemeTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val bookViewModel = hiltViewModel<BookViewModel>()
-                    val readingGoalViewModel = hiltViewModel<ReadingGoalViewModel>()
-                    MainScreen(
-                        bookViewModel = bookViewModel,
-                        readingGoalViewModel = readingGoalViewModel
-                    )
+        try {
+            setContent {
+                DenemeTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        val bookViewModel: BookViewModel = hiltViewModel()
+                        val readingGoalViewModel: ReadingGoalViewModel = hiltViewModel()
+                        MainScreen(
+                            viewModel = bookViewModel,
+                            readingGoalViewModel = readingGoalViewModel
+                        )
+                    }
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

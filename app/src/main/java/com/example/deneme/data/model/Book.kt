@@ -10,7 +10,11 @@ data class Book(
     val title: String,
     val author: String,
     val pageCount: Int,
-    val status: ReadingStatus
+    val status: ReadingStatus,
+    val category: String = "",
+    val currentPage: Int = 0,
+    val startDate: Long? = null,
+    val finishDate: Long? = null
 )
 
 enum class ReadingStatus {

@@ -1,40 +1,41 @@
 package com.example.deneme.ui.screens
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.deneme.data.model.Book
-import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.ui.viewmodel.BookViewModel
 import com.example.deneme.ui.viewmodel.ReadingGoalViewModel
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    bookViewModel: BookViewModel,
+    viewModel: BookViewModel,
     readingGoalViewModel: ReadingGoalViewModel
 ) {
+    var currentTab by remember { mutableStateOf(0) }
+    var showSearchBar by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
-    var showFilterMenu by remember { mutableStateOf(false) }
     var selectedBook by remember { mutableStateOf<Book?>(null) }
-    var selectedStatus by remember { mutableStateOf<ReadingStatus?>(null) }
+    var showFilterMenu by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Kitaplığım") },
                 actions = {
-                    // Filtreleme Menüsü
+                    IconButton(onClick = { showSearchBar = !showSearchBar }) {
+                        Icon(
+                            if (showSearchBar) Icons.Default.Close else Icons.Default.Search,
+                            contentDescription = if (showSearchBar) "Aramayı Kapat" else "Ara"
+                        )
+                    }
                     Box {
                         IconButton(onClick = { showFilterMenu = true }) {
                             Icon(Icons.Default.FilterList, contentDescription = "Filtrele")
@@ -44,127 +45,128 @@ fun MainScreen(
                             onDismissRequest = { showFilterMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Yazara Göre Sırala") },
-                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                                onClick = {
-                                    selectedFilter = if (selectedFilter == "Yazar") null else "Yazar"
-                                    showFilterMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Sayfaya Göre Sırala") },
-                                leadingIcon = { Icon(Icons.Default.Numbers, contentDescription = null) },
-                                onClick = {
-                                    selectedFilter = if (selectedFilter == "Sayfa") null else "Sayfa"
-                                    showFilterMenu = false
-                                }
-                            )
-                            Divider()
-                            DropdownMenuItem(
-                                text = { Text("Filtreleri Temizle") },
-                                leadingIcon = { Icon(Icons.Default.Clear, contentDescription = null) },
+                                text = { Text("Tümü") },
                                 onClick = {
                                     selectedFilter = null
                                     showFilterMenu = false
                                 }
                             )
+                            DropdownMenuItem(
+                                text = { Text("Okunacak") },
+                                onClick = {
+                                    selectedFilter = "Okunacak"
+                                    showFilterMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Okunuyor") },
+                                onClick = {
+                                    selectedFilter = "Okunuyor"
+                                    showFilterMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Okundu") },
+                                onClick = {
+                                    selectedFilter = "Okundu"
+                                    showFilterMenu = false
+                                }
+                            )
+                            Divider()
+                            DropdownMenuItem(
+                                text = { Text("Yazara Göre Sırala") },
+                                onClick = {
+                                    selectedFilter = "Yazar"
+                                    showFilterMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Sayfa Sayısına Göre Sırala") },
+                                onClick = {
+                                    selectedFilter = "Sayfa"
+                                    showFilterMenu = false
+                                }
+                            )
                         }
-                    }
-                    IconButton(onClick = { backupBooks(context, bookViewModel) }) {
-                        Icon(Icons.Default.Save, contentDescription = "Yedekle")
-                    }
-                    IconButton(onClick = { restoreBooks(context, bookViewModel) }) {
-                        Icon(Icons.Default.Restore, contentDescription = "Geri Yükle")
                     }
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddDialog = true }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Kitap Ekle")
-            }
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                BookList(
-                    viewModel = bookViewModel,
-                    onEditClick = { book ->
-                        selectedBook = book
-                        showEditDialog = true
-                    },
-                    onAddBookClick = { showAddDialog = true },
-                    currentTab = when(selectedStatus) {
-                        ReadingStatus.TO_READ -> 1
-                        ReadingStatus.READING -> 2
-                        ReadingStatus.READ -> 3
-                        else -> 0
-                    },
-                    showSearchBar = true,
-                    selectedFilter = selectedFilter
-                )
-            }
-        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.MenuBook, contentDescription = "Tüm Kitaplar") },
+                    icon = { Icon(Icons.Default.MenuBook, contentDescription = "Tümü") },
                     label = { Text("Tümü") },
-                    selected = selectedStatus == null,
-                    onClick = { selectedStatus = null }
+                    selected = currentTab == 0,
+                    onClick = { currentTab = 0 }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Bookmark, contentDescription = "Okunacak") },
                     label = { Text("Okunacak") },
-                    selected = selectedStatus == ReadingStatus.TO_READ,
-                    onClick = { selectedStatus = if (selectedStatus == ReadingStatus.TO_READ) null else ReadingStatus.TO_READ }
+                    selected = currentTab == 1,
+                    onClick = { currentTab = 1 }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.AutoStories, contentDescription = "Okunuyor") },
                     label = { Text("Okunuyor") },
-                    selected = selectedStatus == ReadingStatus.READING,
-                    onClick = { selectedStatus = if (selectedStatus == ReadingStatus.READING) null else ReadingStatus.READING }
+                    selected = currentTab == 2,
+                    onClick = { currentTab = 2 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Book, contentDescription = "Okundu") },
-                    label = { Text("Okundu") },
-                    selected = selectedStatus == ReadingStatus.READ,
-                    onClick = { selectedStatus = if (selectedStatus == ReadingStatus.READ) null else ReadingStatus.READ }
+                    icon = { Icon(Icons.Default.Book, contentDescription = "Okunan") },
+                    label = { Text("Okunan") },
+                    selected = currentTab == 3,
+                    onClick = { currentTab = 3 }
                 )
             }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Kitap Ekle")
+            }
         }
-    )
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            BookList(
+                viewModel = viewModel,
+                onAddBookClick = { showAddDialog = true },
+                onEditClick = { book ->
+                    selectedBook = book
+                    showEditDialog = true
+                },
+                currentTab = currentTab,
+                showSearchBar = showSearchBar,
+                selectedFilter = selectedFilter
+            )
+        }
+    }
 
     if (showAddDialog) {
-        AddBookDialog(
+        SearchBookDialog(
             onDismiss = { showAddDialog = false },
-            viewModel = bookViewModel
+            viewModel = viewModel
         )
     }
 
     if (showEditDialog && selectedBook != null) {
         EditBookDialog(
             book = selectedBook!!,
-            onDismiss = { showEditDialog = false },
-            viewModel = bookViewModel,
-            onBookUpdated = { showEditDialog = false }
+            onDismiss = {
+                showEditDialog = false
+                selectedBook = null
+            },
+            viewModel = viewModel,
+            onBookUpdated = {
+                showEditDialog = false
+                selectedBook = null
+            }
         )
-    }
-}
-
-private fun backupBooks(context: Context, viewModel: BookViewModel) {
-    val backupFile = File(context.getExternalFilesDir(null), "books_backup.json")
-    viewModel.backupBooks(backupFile)
-}
-
-private fun restoreBooks(context: Context, viewModel: BookViewModel) {
-    val backupFile = File(context.getExternalFilesDir(null), "books_backup.json")
-    if (backupFile.exists()) {
-        viewModel.restoreBooks(backupFile)
     }
 }

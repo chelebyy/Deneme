@@ -14,11 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewModelScope
 import com.example.deneme.data.model.Book
 import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.ui.viewmodel.BookViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,134 +24,128 @@ fun SearchBookDialog(
     onDismiss: () -> Unit,
     viewModel: BookViewModel
 ) {
+    var showManualDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var isSearching by remember { mutableStateOf(false) }
     var searchResults by remember { mutableStateOf<List<Book>>(emptyList()) }
-    var showManualAddDialog by remember { mutableStateOf(false) }
 
-    // Dialog her açıldığında arama sonuçlarını temizle
-    LaunchedEffect(Unit) {
-        searchQuery = ""
-        searchResults = emptyList()
-    }
-
-    Dialog(
-        onDismissRequest = {
-            searchResults = emptyList() // Dialog kapanırken sonuçları temizle
-            onDismiss()
-        }
-    ) {
+    Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 600.dp)
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Kitap Ara",
+                    text = "Kitap Ekle",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    color = MaterialTheme.colorScheme.primary
                 )
 
+                // Arama alanı
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = { query ->
-                        searchQuery = query
-                        if (query.isBlank()) {
-                            searchResults = emptyList()
-                        } else {
-                            viewModel.viewModelScope.launch {
-                                try {
-                                    searchResults = viewModel.searchBooks(query)
-                                } catch (e: Exception) {
-                                    searchResults = emptyList()
-                                }
+                    onValueChange = { 
+                        searchQuery = it
+                        if (it.length >= 3) {
+                            isSearching = true
+                            viewModel.searchBooks(it) { books ->
+                                searchResults = books
+                                isSearching = false
                             }
+                        } else {
+                            searchResults = emptyList()
                         }
                     },
+                    label = { Text("Kitap Adı veya Yazar Ara") },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Kitap Adı veya Yazar") },
-                    singleLine = true,
                     trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { 
-                                searchQuery = ""
-                                searchResults = emptyList()
-                            }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Temizle")
-                            }
+                        if (isSearching) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Icon(Icons.Default.Search, contentDescription = null)
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    )
+                )
+
+                // Arama sonuçları
+                if (searchResults.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+                        items(searchResults) { book ->
+                            ListItem(
+                                headlineContent = { Text(book.title) },
+                                supportingContent = { Text(book.author) },
+                                modifier = Modifier.clickable {
+                                    viewModel.addBook(book)
+                                    onDismiss()
+                                }
+                            )
+                            Divider()
                         }
                     }
-                )
-
-                Button(
-                    onClick = { showManualAddDialog = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text("Manuel Kitap Ekle")
                 }
 
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                // Manuel ekleme butonu
+                TextButton(
+                    onClick = { showManualDialog = true },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    items(searchResults) { book ->
-                        SearchResultItem(
-                            book = book,
-                            onClick = {
-                                viewModel.addBook(book)
-                                onDismiss()
-                            }
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Manuel Ekle")
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
                         )
+                    ) {
+                        Text("İptal")
                     }
                 }
             }
         }
     }
 
-    if (showManualAddDialog) {
+    if (showManualDialog) {
         ManualAddBookDialog(
-            onDismiss = { showManualAddDialog = false },
-            viewModel = viewModel
-        )
-    }
-}
-
-@Composable
-fun SearchResultItem(
-    book: Book,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = book.title,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = book.author,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            if (book.pageCount > 0) {
-                Text(
-                    text = "${book.pageCount} sayfa",
-                    style = MaterialTheme.typography.bodySmall
-                )
+            onDismiss = { showManualDialog = false },
+            onBookAdded = { book ->
+                viewModel.addBook(book)
+                showManualDialog = false
+                onDismiss()
             }
-        }
+        )
     }
 }
 
@@ -161,7 +153,7 @@ fun SearchResultItem(
 @Composable
 fun ManualAddBookDialog(
     onDismiss: () -> Unit,
-    viewModel: BookViewModel
+    onBookAdded: (Book) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var author by remember { mutableStateOf("") }
@@ -173,31 +165,43 @@ fun ManualAddBookDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
                     text = "Manuel Kitap Ekle",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("Kitap Adı") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    )
                 )
 
                 OutlinedTextField(
                     value = author,
                     onValueChange = { author = it },
                     label = { Text("Yazar") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    )
                 )
 
                 OutlinedTextField(
@@ -205,10 +209,14 @@ fun ManualAddBookDialog(
                     onValueChange = { pageCount = it },
                     label = { Text("Sayfa Sayısı") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    )
                 )
 
-                Box {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = when (selectedStatus) {
                             ReadingStatus.TO_READ -> "Okunacak"
@@ -217,13 +225,20 @@ fun ManualAddBookDialog(
                         },
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Durum") },
+                        label = { Text("Kategori") },
                         trailingIcon = {
                             IconButton(onClick = { showStatusMenu = true }) {
-                                Icon(Icons.Default.ArrowDropDown, "Durum seç")
+                                Icon(
+                                    Icons.Default.ArrowDropDown,
+                                    contentDescription = "Kategori seç"
+                                )
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        )
                     )
 
                     DropdownMenu(
@@ -255,26 +270,38 @@ fun ManualAddBookDialog(
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    TextButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
                         Text("İptal")
                     }
+
                     Button(
                         onClick = {
-                            if (title.isNotBlank() && author.isNotBlank() && pageCount.isNotBlank()) {
-                                val book = Book(
-                                    title = title,
-                                    author = author,
-                                    pageCount = pageCount.toIntOrNull() ?: 0,
-                                    status = selectedStatus
+                            if (title.isNotBlank() && author.isNotBlank()) {
+                                onBookAdded(
+                                    Book(
+                                        id = 0,
+                                        title = title,
+                                        author = author,
+                                        pageCount = pageCount.toIntOrNull() ?: 0,
+                                        status = selectedStatus
+                                    )
                                 )
-                                viewModel.addBook(book)
-                                onDismiss()
                             }
                         },
-                        enabled = title.isNotBlank() && author.isNotBlank() && pageCount.isNotBlank()
+                        enabled = title.isNotBlank() && author.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
                         Text("Ekle")
                     }
