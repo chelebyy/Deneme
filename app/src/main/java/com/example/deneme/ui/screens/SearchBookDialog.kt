@@ -51,7 +51,7 @@ fun SearchBookDialog(
                 )
 
                 // Arama alanı
-                OutlinedTextField(
+                TextField(
                     value = searchQuery,
                     onValueChange = { 
                         searchQuery = it
@@ -65,21 +65,41 @@ fun SearchBookDialog(
                             searchResults = emptyList()
                         }
                     },
-                    label = { Text("Kitap Adı veya Yazar Ara") },
-                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { 
+                        Text(
+                            "Kitap adı veya yazar ara...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1
+                        ) 
+                    },
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.extraLarge,
                     trailingIcon = {
                         if (isSearching) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.primary
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp
                             )
                         } else {
-                            Icon(Icons.Default.Search, contentDescription = null)
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = "Ara",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = MaterialTheme.colorScheme.surface,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.surface,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
 
