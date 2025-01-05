@@ -1,6 +1,7 @@
 package com.example.deneme
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -9,6 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.deneme.ui.screens.MainScreen
 import com.example.deneme.ui.theme.DenemeTheme
@@ -19,11 +22,28 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // Tam ekran modu
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        var keepSplashScreen = true
+        splashScreen.setKeepOnScreenCondition { keepSplashScreen }
+        
         try {
             setContent {
                 val systemInDarkTheme = isSystemInDarkTheme()
                 var isDarkTheme by remember { mutableStateOf(systemInDarkTheme) }
+                
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(1000)
+                    keepSplashScreen = false
+                }
                 
                 DenemeTheme(darkTheme = isDarkTheme) {
                     Surface(

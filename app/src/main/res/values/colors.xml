@@ -7,4 +7,14 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Splash screen renkleri -->
+    <color name="splash_background">#F5F9FF</color>
+    <color name="book_red">#F44336</color>
+    <color name="book_blue">#2196F3</color>
+    <color name="book_yellow">#FFC107</color>
+    <color name="book_green">#4CAF50</color>
+    <color name="book_purple">#9C27B0</color>
+    <color name="book_orange">#FF9800</color>
+    <color name="book_page">#FFFFFF</color>
 </resources>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="200dp"
+    android:viewportWidth="1200"
+    android:viewportHeight="800">
+
+    <!-- Kitap sayfaları -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#666666"
+        android:strokeWidth="8"
+        android:pathData="M200,400 C200,350 400,300 600,300 C800,300 1000,350 1000,400 L1000,500 C1000,450 800,400 600,400 C400,400 200,450 200,500 Z"/>
+
+    <!-- Alt kitap -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#FFA500"
+        android:strokeWidth="12"
+        android:pathData="M150,450 C150,400 400,350 600,350 C800,350 1050,400 1050,450 L1050,550 C1050,500 800,450 600,450 C400,450 150,500 150,550 Z"/>
+
+    <!-- Üst kitap -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#FFA500"
+        android:strokeWidth="12"
+        android:pathData="M100,500 C100,450 400,400 600,400 C800,400 1100,450 1100,500 L1100,600 C1100,550 800,500 600,500 C400,500 100,550 100,600 Z"/>
+
+    <!-- Sayfa çizgileri -->
+    <path
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="4"
+        android:pathData="M300,420 L900,420"/>
+    <path
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="4"
+        android:pathData="M300,440 L900,440"/>
+    <path
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="4"
+        android:pathData="M300,460 L900,460"/>
+
+</vector> 
