@@ -19,6 +19,7 @@ import com.example.deneme.ui.viewmodel.BookViewModel
 import com.example.deneme.ui.viewmodel.ReadingGoalViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import androidx.compose.ui.graphics.Color
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -38,8 +39,6 @@ class MainActivity : ComponentActivity() {
         
         try {
             setContent {
-                val systemInDarkTheme = isSystemInDarkTheme()
-                var isDarkTheme by remember { mutableStateOf(systemInDarkTheme) }
                 val bookViewModel: BookViewModel = hiltViewModel()
                 
                 LaunchedEffect(Unit) {
@@ -47,15 +46,15 @@ class MainActivity : ComponentActivity() {
                     keepSplashScreen = false
                 }
                 
-                DenemeTheme(darkTheme = isDarkTheme) {
+                DenemeTheme(darkTheme = true) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
                         MainScreen(
                             viewModel = bookViewModel,
-                            isDarkTheme = isDarkTheme,
-                            onThemeChange = { isDarkTheme = it }
+                            isDarkTheme = true,
+                            onThemeChange = { }
                         )
                     }
                 }

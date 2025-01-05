@@ -15,6 +15,8 @@ import com.example.deneme.data.model.ReadingStatus
 import com.example.deneme.ui.viewmodel.BookViewModel
 import kotlinx.coroutines.flow.Flow
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.isSystemInDarkTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,9 +113,16 @@ fun BookItem(
     onStatusChange: (ReadingStatus) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    val isDarkTheme = isSystemInDarkTheme()
 
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -127,15 +136,18 @@ fun BookItem(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = book.title,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (isDarkTheme) Color.White else Color(0xFF000000)
                     )
                     Text(
                         text = book.author,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isDarkTheme) Color.White else Color(0xFF000000)
                     )
                     Text(
                         text = "${book.pageCount} sayfa",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isDarkTheme) Color.White else Color(0xFF000000)
                     )
                     Text(
                         text = when(book.status) {
@@ -143,7 +155,8 @@ fun BookItem(
                             ReadingStatus.READING -> "Okunuyor"
                             ReadingStatus.READ -> "Okundu"
                         },
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isDarkTheme) Color.White else Color(0xFF000000)
                     )
                 }
                 
@@ -154,7 +167,11 @@ fun BookItem(
                 ) {
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Düzenle")
+                            Icon(
+                                Icons.Default.Edit, 
+                                contentDescription = "Düzenle",
+                                tint = if (isDarkTheme) Color.White else Color(0xFF000000)
+                            )
                         }
                         
                         DropdownMenu(
@@ -162,7 +179,7 @@ fun BookItem(
                             onDismissRequest = { showMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Okunacak") },
+                                text = { Text("Okunacak", color = if (isDarkTheme) Color.White else Color.Black) },
                                 leadingIcon = { Icon(Icons.Default.Bookmark, contentDescription = null) },
                                 onClick = {
                                     onStatusChange(ReadingStatus.TO_READ)
@@ -170,7 +187,7 @@ fun BookItem(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Okunuyor") },
+                                text = { Text("Okunuyor", color = if (isDarkTheme) Color.White else Color.Black) },
                                 leadingIcon = { Icon(Icons.Default.AutoStories, contentDescription = null) },
                                 onClick = {
                                     onStatusChange(ReadingStatus.READING)
@@ -178,7 +195,7 @@ fun BookItem(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Okundu") },
+                                text = { Text("Okundu", color = if (isDarkTheme) Color.White else Color.Black) },
                                 leadingIcon = { Icon(Icons.Default.Book, contentDescription = null) },
                                 onClick = {
                                     onStatusChange(ReadingStatus.READ)
@@ -187,7 +204,7 @@ fun BookItem(
                             )
                             Divider()
                             DropdownMenuItem(
-                                text = { Text("Düzenle") },
+                                text = { Text("Düzenle", color = if (isDarkTheme) Color.White else Color.Black) },
                                 leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
                                 onClick = {
                                     onEditClick(book)
@@ -198,7 +215,11 @@ fun BookItem(
                     }
                     
                     IconButton(onClick = onDeleteClick) {
-                        Icon(Icons.Default.Delete, contentDescription = "Sil")
+                        Icon(
+                            Icons.Default.Delete, 
+                            contentDescription = "Sil",
+                            tint = if (isDarkTheme) Color.White else Color(0xFF000000)
+                        )
                     }
                 }
             }

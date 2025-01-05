@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import com.example.deneme.data.model.Book
 import com.example.deneme.ui.viewmodel.BookViewModel
 import com.example.deneme.ui.viewmodel.ReadingGoalViewModel
@@ -74,16 +75,11 @@ fun MainScreen(
                     Text(
                         "Kitaplığım",
                         style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
                         modifier = Modifier.padding(start = 8.dp)
                     ) 
                 },
                 actions = {
-                    IconButton(onClick = { onThemeChange(!isDarkTheme) }) {
-                        Icon(
-                            if (isDarkTheme) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                            contentDescription = if (isDarkTheme) "Açık Tema" else "Koyu Tema"
-                        )
-                    }
                     IconButton(onClick = { showSearchBar = !showSearchBar }) {
                         Icon(
                             if (showSearchBar) Icons.Default.Close else Icons.Default.Search,

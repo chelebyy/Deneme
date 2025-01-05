@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -124,7 +125,7 @@ fun SearchBookDialog(
                                         Icon(
                                             Icons.Default.Add,
                                             contentDescription = "Kitabı Ekle",
-                                            tint = MaterialTheme.colorScheme.primary
+                                            tint = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 },
@@ -138,15 +139,19 @@ fun SearchBookDialog(
                 // Manuel ekleme butonu
                 TextButton(
                     onClick = { showManualDialog = true },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color.White
+                    )
                 ) {
                     Icon(
                         Icons.Default.Add,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Manuel Ekle")
+                    Text("Manuel Ekle", color = Color.White)
                 }
 
                 Row(
