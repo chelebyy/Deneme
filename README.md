@@ -6,14 +6,9 @@ Kitaplık, Cursor AI destekli geliştirme süreci ile oluşturulmuş modern bir 
 
 <table>
   <tr>
-    <td><img src="screenshots/home.png" width="200"/></td>
-    <td><img src="screenshots/search.png" width="200"/></td>
-    <td><img src="screenshots/add.png" width="200"/></td>
-  </tr>
-  <tr>
-    <td>Kitaplık</td>
-    <td>Kitap Arama</td>
-    <td>Kitap Ekleme</td>
+    <td><img src="./screenshots/home.png" width="250"/></td>
+    <td><img src="./screenshots/search.png" width="250"/></td>
+    <td><img src="./screenshots/add.png" width="250"/></td>
   </tr>
 </table>
 
