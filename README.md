@@ -1,8 +1,8 @@
 # 📚 Kitaplık - Android Kitap Takip Uygulaması
 
-Kitaplık, okuyucuların kitaplarını kolayca yönetmelerini sağlayan modern bir Android uygulamasıdır. Material Design 3 prensipleri ve en güncel Android teknolojileri kullanılarak geliştirilmiştir.
+Kitaplık, Cursor AI destekli geliştirme süreci ile oluşturulmuş modern bir Android uygulamasıdır. Material Design 3 prensipleri ve en güncel Android teknolojileri kullanılarak geliştirilmiştir. Proje geliştirme sürecinde Cursor AI'ın kod önerileri, optimizasyonları ve en iyi pratikleri kullanılmıştır.
 
-## 🌟 Ekran Görüntüleri
+## 🤖 Ekran Görüntüleri
 
 <table>
   <tr>
@@ -20,20 +20,15 @@ Kitaplık, okuyucuların kitaplarını kolayca yönetmelerini sağlayan modern b
 ## 🌟 Özellikler
 
 - **Kitap Yönetimi**
-  - Kitap ekleme, düzenleme ve silme
-  - Google Books API entegrasyonu ile kitap arama
-  - Manuel kitap girişi
-  - Okuma durumu takibi (Okunacak, Okunuyor, Okundu)
-
-- **Okuma Hedefleri**
-  - Yıllık okuma hedefi belirleme
-  - Hedef ilerleme takibi
-  - Tamamlanan kitap sayısı istatistikleri
+  - Kitap ekleme ve silme
+  - Google Books API ile kitap arama
+  - Kitap detaylarını görüntüleme
+  - Okuma durumu takibi
 
 - **Modern UI/UX**
   - Material Design 3 tasarım
   - Karanlık/Aydınlık tema desteği
-  - Sezgisel kullanıcı arayüzü
+  - Kullanıcı dostu arayüz
 
 ## 🛠️ Kullanılan Teknolojiler
 
@@ -43,9 +38,10 @@ Kitaplık, okuyucuların kitaplarını kolayca yönetmelerini sağlayan modern b
 - **Room Database** - Yerel veri depolama
 - **Hilt** - Dependency injection
 - **Coroutines & Flow** - Asenkron işlemler
-- **Google Books API** - Kitap arama entegrasyonu
+- **Google Books API** - Kitap arama
 - **Retrofit** - API istekleri
 - **MVVM** - Modern mimari yapı
+- **Cursor AI** - Projenin ana geliştirme ortamı ve AI destekli kod asistanı
 
 ## 🚀 Kurulum
 
