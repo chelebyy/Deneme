@@ -17,12 +17,14 @@ Kitaplık, Cursor AI destekli geliştirme süreci ile oluşturulmuş modern bir 
 - **Kitap Yönetimi**
   - Kitap ekleme ve silme
   - Google Books API ile kitap arama
-  - Kitap detaylarını görüntüleme
-  - Okuma durumu takibi
+  - Kitap detaylarını görüntüleme (başlık, yazar, sayfa sayısı)
+  - Okuma durumu takibi (Okunacak, Okunuyor, Okundu)
+  - Kitap listesi filtreleme ve sıralama
 
 - **Modern UI/UX**
   - Material Design 3 tasarım
   - Karanlık/Aydınlık tema desteği
+  - Dinamik renk sistemi
   - Kullanıcı dostu arayüz
 
 ## 🛠️ Kullanılan Teknolojiler
@@ -38,13 +40,3 @@ Kitaplık, Cursor AI destekli geliştirme süreci ile oluşturulmuş modern bir 
 - **MVVM** - Modern mimari yapı
 - **Cursor AI** - Projenin ana geliştirme ortamı ve AI destekli kod asistanı
 
-## 🚀 Kurulum
-
-1. Projeyi klonlayın
-2. Android Studio'da açın
-3. Gradle sync işlemini tamamlayın
-4. Uygulamayı çalıştırın
-
-## 📄 Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır. 
